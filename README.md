@@ -1,5 +1,9 @@
 # IIC-Hackathon
 AI-driven government scheme matching and support navigation platform for marginalized entrepreneurs.
+
+PROTOTYPE : (GOOGLE SCRIPT)
+https://script.google.com/macros/s/AKfycbw4PGgJQbCgoBuRXjIYVl7cd1yi32-A6gQX0Vy_Xyaz4iItCrqAGD0ZV1zNlBSdoMGG/exec
+[Requires Google Gemini API KEY - Model 3.5 Flash]
 ## ⚠️ Prototype Access Instructions
 
 This prototype is developed using **Google Apps Script with Google Sheets as the backend database**.
