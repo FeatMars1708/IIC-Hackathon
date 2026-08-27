@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>project people — Support Navigator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1A365D;
+      --accent: #0070F3;
+      --success: #10B981;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --bg: #F8FAFC;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--primary); margin: 0; }
+
+    .navbar {
+      background: white;
+      color: var(--primary);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #E2E8F0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .brand-container { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 36px; height: 36px; background: #E2E8F0; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .brand-text h1 { font-size: 1.25rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+    .brand-text span { font-size: 0.65rem; font-weight: 600; letter-spacing: 1px; color: #64748B; text-transform: uppercase; }
+
+    section { display: none; max-width: 800px; margin: 0 auto; padding: 2rem; }
+    section.active { display: block; }
+
+    .hero { text-align: center; }
+    .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; color: var(--primary); }
+    .hero p { color: #475569; font-size: 1.1rem; line-height: 1.5; }
+
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 2rem; }
+    .stat-card { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; border: 1px solid #E2E8F0; border-top: 4px solid var(--primary);}
+    .stat-card h3 { margin: 0 0 10px 0; color: var(--accent); }
+    .stat-card p { margin: 0; font-size: 0.85rem; color: #64748B; }
+
+    .card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 1.5rem; border: 1px solid #E2E8F0; }
+    .bg-blue { border-left: 5px solid var(--accent); background: #f0f7ff; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+    input[type="text"], input[type="number"], select, textarea {
+      padding: 0.75rem; border: 1px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 0.95rem;
+    }
+    textarea { height: 100px; resize: vertical; width: 100%; box-sizing: border-box; }
+
+    .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #334155; }
+    .checkbox-item.dl-verified { color: var(--success); font-weight: 600; }
+
+    .btn-group { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+    button { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #0056b3; }
+    .btn-secondary { background: #E2E8F0; color: var(--primary); }
+    .btn-digilocker { background: #003366; color: white; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-digilocker:hover { background: #002347; }
+
+    #dl-status { font-size: 0.85rem; margin-top: 6px; min-height: 1.2em; }
+    #dl-status.ok { color: var(--success); }
+    #dl-status.err { color: var(--danger); }
+
+    .tag { background: #E2E8F0; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; vertical-align: middle; }
+    .verification-badge { background: #DEF7EC; color: #03543F; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 1rem;}
+
+    .rule-list { list-style: none; padding-left: 0; font-size: 0.9rem; }
+    .rule-list li { margin-bottom: 0.5rem; }
+    .pass li::before { content: "✅ "; }
+    .fail li::before { content: "❌ "; }
+    .warn li::before { content: "⚠️ "; }
+
+    /* --- Chat widget --- */
+    #chat-bubble {
+      position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%;
+      background: var(--accent); color: white; font-size: 1.6rem; display: flex; align-items: center;
+      justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; z-index: 999; border: none;
+    }
+    #chat-panel {
+      position: fixed; bottom: 96px; right: 24px; width: 340px; max-width: 90vw; height: 460px;
+      background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: none; flex-direction: column; overflow: hidden; z-index: 999; border: 1px solid #E2E8F0;
+    }
+    #chat-panel.open { display: flex; }
+    #chat-header {
+      background: var(--primary); color: white; padding: 0.9rem 1rem; display: flex;
+      justify-content: space-between; align-items: center; font-weight: 600; font-size: 0.95rem;
+    }
+    #chat-header button { background: transparent; color: white; padding: 2px 8px; font-size: 1rem; }
+    #chat-messages { flex: 1; overflow-y: auto; padding: 0.75rem; display: flex; flex-direction: column; gap: 8px; background: #F8FAFC; }
+    .chat-msg { max-width: 85%; padding: 0.5rem 0.75rem; border-radius: 10px; font-size: 0.88rem; line-height: 1.4; }
+    .chat-msg.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
+    .chat-msg.bot { align-self: flex-start; background: #E2E8F0; color: var(--primary); border-bottom-left-radius: 2px; }
+    .chat-msg.typing { font-style: italic; color: #64748B; background: transparent; }
+    #chat-input-row { display: flex; gap: 6px; padding: 0.6rem; border-top: 1px solid #E2E8F0; }
+    #chat-input-row input { flex: 1; padding: 0.6rem; border: 1px solid #CBD5E1; border-radius: 6px; font-family: inherit; }
+    #chat-input-row button { padding: 0.5rem 0.75rem; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="brand-container">
+      <div class="brand-icon">🌐</div>
+      <div class="brand-text">
+        <h1>project people</h1>
+        <span>Access to AI • For All (SIH 2026)</span>
+      </div>
+    </div>
+    <select id="lang-select" style="background:#F8FAFC; color:var(--primary); padding: 6px 12px; border:1px solid #CBD5E1; border-radius:6px; font-weight:600;">
+      <option value="English">English</option>
+      <option value="Hindi">Hindi</option>
+    </select>
+  </nav>
+
+  <!-- PAGE 1: HOME/LANDING -->
+  <section id="page-landing" class="active">
+    <div class="hero" style="margin-top: 1rem;">
+      <h1>Find Government Support That Fits Your Business.</h1>
+      <p>Tell us about yourself and what you need. We’ll identify relevant schemes, explain your eligibility, and help you prepare safely.</p>
+
+      <div class="cards-grid">
+        <div class="stat-card"><h3>MATCH</h3><p>Find relevant schemes.</p></div>
+        <div class="stat-card"><h3>RANK</h3><p>Strongest matches first.</p></div>
+        <div class="stat-card"><h3>READY</h3><p>Check required documents.</p></div>
+        <div class="stat-card"><h3>APPLY</h3><p>Get official guidance.</p></div>
+      </div>
+
+      <div style="margin-top: 2rem;">
+        <button class="btn-primary" style="padding: 1rem 2rem; font-size: 1.05rem;" onclick="nav('page-profile')">START MATCHING</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 2: PROFILE & NEED -->
+  <section id="page-profile">
+    <div class="card">
+      <h2 style="margin-top: 0;">1. Applicant Details</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" id="f-age" placeholder="e.g. 25">
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="f-gender">
+            <option value="">Select...</option>
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Social Category</label>
+          <select id="f-category">
+            <option value="">Select...</option>
+            <option value="general">General</option>
+            <option value="sc">SC</option>
+            <option value="st">ST</option>
+            <option value="obc">OBC</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Occupation / Trade (Optional)</label>
+          <input type="text" id="f-occupation" placeholder="e.g. Artisan, Weaver, Tech">
+        </div>
+        <div class="form-group">
+          <label>Target Funding Needed (₹)</label>
+          <input type="number" id="f-funding" placeholder="e.g. 500000">
+        </div>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 1.5rem 0;">
+
+      <h2>2. Document Readiness</h2>
+      <p style="font-size: 0.9rem; color: #64748B; margin-top: -10px;">Select the documents you currently have, or verify them instantly through DigiLocker.</p>
+
+      <button class="btn-digilocker" onclick="openDigiLocker()">🔒 Verify via DigiLocker</button>
+      <div id="dl-status"></div>
+
+      <div class="checkbox-grid" style="margin-top: 1rem;">
+        <label class="checkbox-item" data-doc="Aadhaar"><input type="checkbox" class="doc-chk" value="Aadhaar"> Aadhaar</label>
+        <label class="checkbox-item" data-doc="PAN"><input type="checkbox" class="doc-chk" value="PAN"> PAN</label>
+        <label class="checkbox-item" data-doc="Bank Statement"><input type="checkbox" class="doc-chk" value="Bank Statement"> Bank Statement</label>
+        <label class="checkbox-item" data-doc="Udyam Registration"><input type="checkbox" class="doc-chk" value="Udyam Registration"> Udyam</label>
+        <label class="checkbox-item" data-doc="Category Certificate"><input type="checkbox" class="doc-chk" value="Category Certificate"> Category Cert.</label>
+        <label class="checkbox-item" data-doc="Project Report"><input type="checkbox" class="doc-chk" value="Project Report"> Project Report</label>
+        <label class="checkbox-item" data-doc="Artisan ID"><input type="checkbox" class="doc-chk" value="Artisan ID"> Artisan ID</label>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 1.5rem 0;">
+
+      <h2>3. Describe your need</h2>
+      <p style="font-size: 0.9rem; color: #64748B; margin-top: -10px;">Tell us any extra context in your own words. Our AI will factor this in.</p>
+      <textarea id="need-input" placeholder="E.g., I am based in rural Karnataka making bamboo baskets..."></textarea>
+
+      <div class="btn-group">
+        <button class="btn-primary" onclick="analyzeNeed()">ANALYZE ELIGIBILITY</button>
+        <button class="btn-secondary" onclick="loadDemo()">Load Demo Data</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 3: RESULTS DASHBOARD -->
+  <section id="page-results">
+    <h2>Your Match Dashboard</h2>
+
+    <div class="card bg-blue">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="margin: 0;">Application Readiness <span class="tag">System Estimate</span></h3>
+        <select id="scheme-readiness-select" onchange="updateReadinessUI()" style="padding: 5px; border-radius: 4px; border: 1px solid #CBD5E1; max-width: 250px;"></select>
+      </div>
+      <div style="font-size: 2.5rem; font-weight: 700;">
+        <span id="readiness-score">0</span>%
+      </div>
+      <p style="margin:5px 0 0 0; font-size: 0.9rem;"><strong>Required Documents:</strong> <span id="readiness-reqs"></span></p>
+      <p style="margin:5px 0 0 0; font-size: 0.9rem; color: #EF4444;"><strong>Missing:</strong> <span id="readiness-missing"></span></p>
+    </div>
+
+    <div class="card">
+      <h3>Recommended Support Bundle</h3>
+      <p class="verification-badge">✅ Compatibility verified by rules engine</p>
+      <div id="bundle-container"></div>
+    </div>
+
+    <h3>Scheme Evaluations (Ranked)</h3>
+    <div id="matches-container"></div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <button class="btn-secondary" onclick="nav('page-landing')">Start Over</button>
+    </div>
+  </section>
+
+  <!-- CHAT WIDGET -->
+  <button id="chat-bubble" onclick="toggleChat()">💬</button>
+  <div id="chat-panel">
+    <div id="chat-header">
+      <span>Ask project people</span>
+      <button onclick="toggleChat()">✕</button>
+    </div>
+    <div id="chat-messages"></div>
+    <div id="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Type your question…" onkeydown="if(event.key==='Enter') sendChatMessage();">
+      <button class="btn-primary" onclick="sendChatMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    let globalReadinessData = {};
+    let chatHistory = [];
+
+    const documentPortals = {
+      "Aadhaar": "https://myaadhaar.uidai.gov.in/",
+      "PAN": "https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html",
+      "Udyam Registration": "https://udyamregistration.gov.in/",
+      "Category Certificate": "https://services.india.gov.in/",
+      "Artisan ID": "https://pmvishwakarma.gov.in/",
+      "Project Report": "https://msme.gov.in/",
+      "Bank Statement": "#"
+    };
+
+    function currentLang() {
+      return document.getElementById('lang-select').value;
+    }
+
+    function nav(pageId) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      window.scrollTo(0,0);
+    }
+
+    function loadDemo() {
+      document.getElementById('f-age').value = "28";
+      document.getElementById('f-gender').value = "female";
+      document.getElementById('f-category').value = "st";
+      document.getElementById('f-occupation').value = "bamboo artisan";
+      document.getElementById('f-funding').value = "1500000";
+
+      const docs = ["Aadhaar", "Udyam Registration", "Category Certificate"];
+      document.querySelectorAll('.doc-chk').forEach(cb => {
+        cb.checked = docs.includes(cb.value);
+      });
+
+      document.getElementById('need-input').value = "I am operating in rural Karnataka making traditional bamboo baskets. I want to expand my workshop and buy machinery.";
+    }
+
+    function analyzeNeed() {
+      const manualProfile = {
+        age: document.getElementById('f-age').value,
+        gender: document.getElementById('f-gender').value,
+        category: document.getElementById('f-category').value,
+        occupation: document.getElementById('f-occupation').value,
+        funding_need: document.getElementById('f-funding').value,
+        documents: []
+      };
+
+      Object.keys(manualProfile).forEach(k => {
+        if (!manualProfile[k]) delete manualProfile[k];
+      });
+
+      document.querySelectorAll('.doc-chk:checked').forEach(cb => {
+        manualProfile.documents.push(cb.value);
+      });
+
+      const text = document.getElementById('need-input').value;
+
+      const btn = document.querySelector('#page-profile .btn-primary');
+      btn.innerText = "Processing Logic Engine...";
+      btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(renderResults)
+        .withFailureHandler(err => { alert("Error: " + err); btn.disabled = false; btn.innerText = "ANALYZE ELIGIBILITY"; })
+        .processJourney(text, manualProfile);
+    }
+
+    function renderResults(data) {
+      if(!data.success) return alert("System Error: " + data.error);
+
+      globalReadinessData = data.readiness;
+      const selectEl = document.getElementById('scheme-readiness-select');
+      selectEl.innerHTML = '';
+
+      data.rankedSchemes.forEach((match, index) => {
+        if(match.status === "ELIGIBLE" || match.status === "POTENTIALLY_ELIGIBLE" || index === 0) {
+            const option = document.createElement('option');
+            option.value = match.scheme.scheme_id;
+            option.text = match.scheme.scheme_name;
+            selectEl.appendChild(option);
+        }
+      });
+
+      updateReadinessUI();
+
+      const bundleDiv = document.getElementById('bundle-container');
+      bundleDiv.innerHTML = data.bundles[0]?.schemes.map(s =>
+        `<div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 5px; background: #f8fafc;">
+          <strong>${s.scheme_name}</strong> - <a href="https://${s.application_url}" target="_blank" style="color:var(--accent)">Official Portal</a>
+        </div>`
+      ).join('') || "No bundles available.";
+
+      const matchesDiv = document.getElementById('matches-container');
+      matchesDiv.innerHTML = data.rankedSchemes.map(match => `
+        <div class="card">
+          <h3 style="margin-top:0;">${match.scheme.scheme_name}
+            <span class="tag" style="background: ${match.status === 'ELIGIBLE' ? '#10B981' : (match.status === 'POTENTIALLY_ELIGIBLE' ? '#F59E0B' : '#EF4444')}; color: white;">
+              ${match.status.replace('_', ' ')}
+            </span>
+          </h3>
+          <p><strong>Benefit:</strong> ${match.scheme.benefit}</p>
+
+          <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+              <p style="color: #10B981; font-weight: bold; margin-bottom: 5px;">WHY YOU QUALIFY</p>
+              <ul class="rule-list pass">
+                ${match.passed.map(r => `<li>${r}</li>`).join('') || "<li>No specific rules passed.</li>"}
+              </ul>
+            </div>
+
+            <div style="flex: 1; min-width: 200px;">
+              <p style="color: #EF4444; font-weight: bold; margin-bottom: 5px;">WHY YOU DON'T QUALIFY</p>
+              <ul class="rule-list fail">
+                ${match.failed.map(r => `<li>${r}</li>`).join('') || "<li>No failed conditions.</li>"}
+              </ul>
+              ${match.unknown.length > 0 ? `
+                <p style="color: #F59E0B; font-weight: bold; margin-bottom: 5px; margin-top: 10px;">INFORMATION NEEDED</p>
+                <ul class="rule-list warn">${match.unknown.map(r => `<li>${r}</li>`).join('')}</ul>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      nav('page-results');
+
+      const btn = document.querySelector('#page-profile .btn-primary');
+      btn.innerText = "ANALYZE ELIGIBILITY";
+      btn.disabled = false;
+    }
+
+    function updateReadinessUI() {
+      const selectedId = document.getElementById('scheme-readiness-select').value;
+      const data = globalReadinessData[selectedId];
+      if(!data) return;
+
+      document.getElementById('readiness-score').innerText = data.score;
+      document.getElementById('readiness-reqs').innerText = data.required.length > 0 ? data.required.join(', ') : "None listed";
+
+      const missingContainer = document.getElementById('readiness-missing');
+      if (data.missing.length > 0) {
+        missingContainer.innerHTML = data.missing.map(doc => {
+          let link = documentPortals[doc] || "#";
+          let actionBtn = link !== "#"
+            ? `<a href="${link}" target="_blank" style="background:#EF4444; color:white; text-decoration:none; padding:2px 8px; border-radius:12px; font-size:0.75rem; margin-left:6px;">Get Here ↗</a>`
+            : `<span style="background:#64748B; color:white; padding:2px 8px; border-radius:12px; font-size:0.75rem; margin-left:6px;">Contact Bank</span>`;
+
+          return `<span style="display:inline-block; margin-right:15px; margin-top:5px; color:#334155;">${doc} ${actionBtn}</span>`;
+        }).join('');
+      } else {
+        missingContainer.innerText = "None! You have all required documents.";
+        missingContainer.style.color = "#10B981";
+      }
+    }
+
+    // ---------- DigiLocker ----------
+    function openDigiLocker() {
+  const statusEl = document.getElementById('dl-status');
+  statusEl.className = '';
+  statusEl.innerText = 'Opening DigiLocker…';
+
+  google.script.run
+    .withSuccessHandler(url => {
+      window.open(url, 'digilocker', 'width=480,height=650');
+    })
+    .withFailureHandler(err => {
+      // DEMO FALLBACK for hackathon
+      console.log("DigiLocker not configured, using demo mode");
+      const demoDocs = ["Aadhaar", "PAN"];
+      handleDigiLockerMessage({type: 'documents', documents: demoDocs});
+      statusEl.className = 'ok';
+      statusEl.innerText = 'Demo: Verified Aadhaar & PAN (DigiLocker not configured)';
+    })
+    .getDigiLockerAuthUrl();
+}
+
+    function handleDigiLockerMessage(msg) {
+      const statusEl = document.getElementById('dl-status');
+      if (msg.type === 'error') {
+        statusEl.className = 'err';
+        statusEl.innerText = 'DigiLocker: ' + msg.message;
+        return;
+      }
+      if (msg.type === 'documents') {
+        const found = msg.documents || [];
+        document.querySelectorAll('.checkbox-item').forEach(item => {
+          const docName = item.getAttribute('data-doc');
+          if (found.includes(docName)) {
+            item.querySelector('input').checked = true;
+            item.classList.add('dl-verified');
+          }
+        });
+        statusEl.className = 'ok';
+        statusEl.innerText = found.length
+          ? `Verified ${found.length} document(s) via DigiLocker.`
+          : 'Connected to DigiLocker, but no matching documents were found in your locker.';
+      }
+    }
+
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      if (!msg || typeof msg !== 'object') return;
+      if (msg.source === 'ppDigiLockerBridge') handleDigiLockerMessage(msg);
+    });
+
+    // ---------- Chat widget ----------
+    function toggleChat() {
+      const panel = document.getElementById('chat-panel');
+      panel.classList.toggle('open');
+      if (panel.classList.contains('open') && chatHistory.length === 0) {
+        appendChatMessage('bot', "Hi! Ask me about any scheme, eligibility rules, or required documents.");
+      }
+    }
+
+    function appendChatMessage(role, text) {
+      const box = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + role;
+      div.innerText = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+      return div;
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      appendChatMessage('user', text);
+      chatHistory.push({ role: 'user', text: text });
+
+      const typingEl = appendChatMessage('bot typing', 'Typing…');
+
+      google.script.run
+        .withSuccessHandler(reply => {
+          typingEl.remove();
+          appendChatMessage('bot', reply);
+          chatHistory.push({ role: 'assistant', text: reply });
+        })
+        .withFailureHandler(err => {
+          typingEl.remove();
+          appendChatMessage('bot', "Sorry, something went wrong: " + (err.message || err));
+        })
+        .chatWithBot(chatHistory.slice(0, -1), text, currentLang());
+    }
+  </script>
+</body>
+</html>
